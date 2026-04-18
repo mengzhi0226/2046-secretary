@@ -2,44 +2,44 @@
 
 ---
 
-## 一、AI技术
+## 一、AI 技术
 
-### 1. 斯坦福AI指数2026：中国几乎抹平美国AI领先优势
-**摘要：** 斯坦福大学发布2026年度AI指数报告，指出中国已成为美国AI领域的强力竞争对手。自2025年初以来，中美两国的顶尖AI模型多次在性能排名上互相超越。报告同时显示，生成式AI在三年内达到53%的人口采用率，超越个人电脑和互联网的普及速度，相关工具对美国消费者的年估算价值已达1720亿美元。
-**来源：** Stanford HAI / Fortune（https://fortune.com/2026/04/16/stanford-study-how-has-china-gained-on-us-ai-war/）
+### 1. 中美 AI 差距大幅缩小，斯坦福报告示警
+**摘要：** 斯坦福大学最新报告显示，2026年3月中美顶尖AI模型差距已缩至Arena评分仅39分，中国Dola-Seed 2.0仅落后Anthropic Claude Opus 4.6约2.7%。中国在工业机器人装机量上领跑全球，超过29.5万台，同时占全球AI学术引用量的20.6%。
+**来源：** Fortune / Stanford AI Index 2026 (https://fortune.com/2026/04/16/stanford-study-how-has-china-gained-on-us-ai-war/)
 
-### 2. PwC报告：AI经济收益高度集中，仅20%企业获得80%收益
-**摘要：** PwC发布2026年AI绩效研究报告，揭示AI经济红利正在极度集中化——仅20%的企业获取了四分之三的AI经济收益。领跑企业的战略重心在于"增长驱动"而非单纯的"效率提升"，这标志着AI应用已从成本优化阶段迈入价值创造新阶段。
-**来源：** PwC（https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-performance-study.html）
+### 2. PwC：AI经济红利高度集中，仅20%企业获取75%收益
+**摘要：** 普华永道2026年AI绩效研究发现，AI带来的经济收益中有四分之三被头部20%的企业所捕获，这些领先企业战略重心已从单纯提升生产率转向整体业务增长。报告呼吁更多中小企业加速AI落地以缩小差距。
+**来源：** PwC 2026 AI Performance Study (https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-performance-study.html)
 
-### 3. 2026全球量子与AI挑战赛正式启动，加速企业级实用化落地
-**摘要：** 2026全球量子与AI挑战赛于4月16日宣布启动，旨在加速量子计算与AI技术在企业实际场景中的融合应用。与此同时，英伟达GPU技术大会（GTC）宣告行业重心已从基准测试转向真实世界的企业级部署，财富500强企业正在制造、物流、金融等领域大规模推进智能体（Agentic AI）的生产落地。
-**来源：** The Quantum Insider（https://thequantuminsider.com/2026/04/16/2026-global-quantum-and-ai-challenge-launches-to-accelerate-practical-enterprise-use-cases/）
+### 3. OpenAI 年化营收突破250亿美元，启动上市前期准备
+**摘要：** OpenAI年化营收已超过250亿美元，并开始上市前的早期筹备工作；Anthropic年化营收亦接近190亿美元。与此同时，微软宣布在日本四年投入100亿美元用于AI数据中心扩建及培训逾百万名工程师。
+**来源：** MIT Technology Review (https://www.technologyreview.com/2026/04/13/1135675/want-to-understand-the-current-state-of-ai-check-out-these-charts/)
 
 ---
 
 ## 二、烟草行业
 
-### 1. FDA放缓尼古丁袋快速审批，青少年使用问题引发监管收紧
-**摘要：** 美国食品药品监督管理局（FDA）已放缓对尼古丁袋产品的快速审批流程，主因是青少年使用率上升、成瘾性风险以及科学证据存疑。目前仅26款尼古丁袋产品获得授权，多家大型烟草公司的申请仍积压审查中，部分已等待数年。与此同时，华盛顿州已将95%烟草税扩展适用于尼古丁袋和电子烟产品，填补监管空白。
-**来源：** Expose Tobacco / Oklahoma TSET（https://exposetobacco.org/news/big-tobacco-industry-in-2026/）
+### 1. 菲莫国际无烟产品占比超四成，覆盖105个市场
+**摘要：** 菲莫国际（PMI）披露，截至2025年底，旗下无烟产品已在105个市场销售，全球用户达4300万成年消费者，无烟产品净收入占比已达41.5%。公司持续向"无烟未来"战略转型，传统卷烟份额持续收缩。
+**来源：** Tobacco Reporter (https://tobaccoreporter.com/)
 
-### 2. 马来西亚确认2026年内全面禁止电子烟，全球禁烟趋势加速
-**摘要：** 马来西亚政府正式确认将于2026年中至年末全面实施电子烟禁令。与此同时，台北市长蒋万安表示，台北将于2026年底前推出"无烟台北"计划，参照东京模式设立指定吸烟区。四大跨国烟草巨头均已开始大力布局尼古丁袋市场，预计2026年将显著加大推广力度。
-**来源：** Tobacco Reporter / STAT News（https://tobaccoreporter.com/category/breaking-news/）
+### 2. 日本4月起上调烟草税，美国联邦控烟机构遭实质性拆解
+**摘要：** 日本政府已于4月正式上调烟草税及企业税，并计划2027年1月起征收个人所得税附加税。与此同时，美国CDC控烟办公室去年裁员殆尽，联邦控烟核心职能几近停摆，引发公共卫生界强烈担忧。
+**来源：** Action on Smoking & Health (ASH) Q1 2026 Review (https://ash.org/action-review-first-quarter-2026/)
 
 ---
 
 ## 三、工厂数字化
 
-### 1. 三星宣布2030年前将全球工厂全面转型为"AI驱动工厂"
-**摘要：** 三星电子宣布战略计划，将在2030年前把旗下全球制造业务全面升级为"AI驱动工厂"，覆盖从入库物流到最终出货的完整制造价值链。AI原生技术、数字孪生和工业计算机视觉被确立为智能制造的三大核心支柱，标志着全球头部制造商正将AI从试点应用推向全厂系统化整合。
-**来源：** Samsung Newsroom（https://news.samsung.com/global/samsung-electronics-announces-strategy-to-transition-global-manufacturing-into-ai-driven-factories-by-2030）
+### 1. 2026上海WOD制造业数字化博览会6月举办，聚焦六大核心行业
+**摘要：** 第二届WOD制造业数字化博览会将于2026年6月3–5日在上海新国际博览中心举行，重点覆盖电子电气、汽车制造、高端装备、石化、半导体及储能六大制造垂直领域，旨在推动智能制造转型的精准对接。
+**来源：** GlobeNewswire (https://www.globenewswire.com/news-release/2026/04/08/3270115/0/en/Save-the-Date-2026-WOD-Manufacturing-Digitalization-Expo-Shanghai-Precision-Matching-for-Intelligent-Manufacturing-Transformation.html)
 
-### 2. 2026上海工厂数字化博览会定档，聚焦智能制造精准转型
-**摘要：** 2026 WOD制造业数字化博览会（上海）正式宣布定档，定位为智能制造转型的精准对接平台。与此同时，中国工业和信息化部（MIIT）正式明确2026年制造业升级规划蓝图，围绕关键生产场景详细部署数字化工具与平台应用路径，中国工厂数字化进程进入政策与市场双轮驱动的新阶段。
-**来源：** GlobeNewswire / China Briefing（https://www.globenewswire.com/news-release/2026/04/08/3270115/0/en/Save-the-Date-2026-WOD-Manufacturing-Digitalization-Expo-Shanghai-Precision-Matching-for-Intelligent-Manufacturing-Transformation.html）
+### 2. 台达电子亮相汉诺威工业展，AI+数字孪生赋能智能工厂
+**摘要：** 2026年汉诺威工业博览会上，台达电子展示了以AI、数字孪生与高效能源技术融合为核心的智能制造方案，现场演示PCB插件与协作机器人生产线，通过自适应控制与预测分析优化产能、降低停机时间，推动工厂向绿色智能转型。
+**来源：** Industria XPL (https://www.industriaxplc.com/blogs/news/ai-driven-smart-manufacturing-and-sustainable-energy-solutions-delta-s-integrated-vision-at-hannover-messe-2026)
 
 ---
 
-*新闻z · 2026-04-18 07:00 CST*
+*——新闻z | 2026-04-18 07:00 CST*
