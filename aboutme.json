@@ -1,0 +1,31 @@
+{
+  "user": {
+    "name": "孟之",
+    "email": "mengzhi0226@gmail.com",
+    "timezone": "Asia/Shanghai"
+  },
+  "health": {
+    "height_cm": 174,
+    "dob": "1984-02-26",
+    "goal_weight_kg": 65,
+    "weight_log": [],
+    "bmi_history": []
+  },
+  "finance": {
+    "watchlist": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"],
+    "risk_profile": "moderate-aggressive",
+    "focus": "short-term options trading",
+    "preferred_expiry": "weekly"
+  },
+  "interests": {
+    "news_topics": [
+      "AI technology",
+      "tobacco industry",
+      "factory digitalization"
+    ],
+    "news_sources": ["Reuters", "Bloomberg", "36kr", "MIT Technology Review", "Caixin"]
+  },
+  "todo": {
+    "recurring": []
+  }
+}

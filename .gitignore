@@ -1,0 +1,13 @@
+# Secrets — never commit these
+.env
+.env.local
+*.env
+
+# Claude settings contain SMTP passwords
+.claude/settings.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
