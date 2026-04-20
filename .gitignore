@@ -11,3 +11,12 @@
 Thumbs.db
 desktop.ini
 .vscode/
+
+# Temp files
+__pycache__/
+*.pyc
+temp_prompt_*.txt
+temp_stock_data.txt
+new_tasks.txt
+*.log
+scripts/logs/

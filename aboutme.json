@@ -2,17 +2,44 @@
   "user": {
     "name": "孟之",
     "email": "mengzhi0226@gmail.com",
-    "timezone": "Asia/Shanghai"
+    "timezone": "Asia/Singapore"
   },
   "health": {
     "height_cm": 174,
     "dob": "1984-02-26",
     "goal_weight_kg": 65,
-    "weight_log": [],
-    "bmi_history": []
+    "weight_log": [
+      {
+        "date": "2026-04-19",
+        "kg": 82
+      },
+      {
+        "date": "2026-04-20",
+        "kg": 82.0
+      }
+    ],
+    "bmi_history": [
+      {
+        "date": "2026-04-19",
+        "bmi": 27.1
+      },
+      {
+        "date": "2026-04-20",
+        "bmi": 27.1
+      }
+    ]
   },
   "finance": {
-    "watchlist": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"],
+    "watchlist": [
+      "AAPL",
+      "MSFT",
+      "GOOGL",
+      "AMZN",
+      "META",
+      "NVDA",
+      "TSLA",
+      "MU"
+    ],
     "risk_profile": "moderate-aggressive",
     "focus": "short-term options trading",
     "preferred_expiry": "weekly"
@@ -23,9 +50,22 @@
       "tobacco industry",
       "factory digitalization"
     ],
-    "news_sources": ["Reuters", "Bloomberg", "36kr", "MIT Technology Review", "Caixin"]
+    "news_sources": [
+      "Reuters",
+      "Bloomberg",
+      "36kr",
+      "MIT Technology Review",
+      "Caixin"
+    ]
   },
   "todo": {
     "recurring": []
+  },
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "user": "mengzhi0226@gmail.com",
+    "password": "yimpamchqevetyvi",
+    "to": "mengzhi0226@gmail.com"
   }
 }
