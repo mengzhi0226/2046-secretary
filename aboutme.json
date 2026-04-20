@@ -61,6 +61,7 @@
   "todo": {
     "recurring": []
   },
+  "github_pat": "PASTE_YOUR_PAT_HERE",
   "smtp": {
     "host": "smtp.gmail.com",
     "port": 587,
