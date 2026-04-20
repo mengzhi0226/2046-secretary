@@ -3,8 +3,8 @@ Set-Location "C:\Users\hrgap\OneDrive\Desktop\2046CC~1"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ticker = $Ticker.Trim().ToUpper()
-$now    = (python -c 'import datetime; print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))').Trim()
-$today  = (python -c 'import datetime; print(datetime.date.today())').Trim()
+$now    = Get-Date -Format "yyyy-MM-dd HH:mm"
+$today  = Get-Date -Format "yyyy-MM-dd"
 
 $outDir  = [System.Text.Encoding]::UTF8.GetString([byte[]](0xE6,0x8A,0x95,0xE8,0xB5,0x84,0x7A))  # 投资z
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
