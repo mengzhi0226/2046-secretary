@@ -1,0 +1,88 @@
+{
+  "entries": [
+    {
+      "date": "2026-04-01",
+      "pnl": 18000,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-02",
+      "pnl": -2015.22,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-03",
+      "pnl": 44.57,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-06",
+      "pnl": 6936.71,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-07",
+      "pnl": -1073.79,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-08",
+      "pnl": 22600,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-09",
+      "pnl": 2060.77,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-10",
+      "pnl": 581.48,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-14",
+      "pnl": 698.03,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-15",
+      "pnl": 852.73,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-16",
+      "pnl": 714.34,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-17",
+      "pnl": 326.51,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-19",
+      "pnl": 122.12,
+      "currency": "SGD",
+      "note": ""
+    },
+    {
+      "date": "2026-04-20",
+      "pnl": 0,
+      "currency": "SGD",
+      "note": ""
+    }
+  ]
+}

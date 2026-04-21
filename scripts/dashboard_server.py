@@ -15,6 +15,7 @@ AGENTS = [
     {"key": "touzi",    "label": "📈 投资z",  "folder": "投资z",  "color": "#ffa502"},
     {"key": "jiankang", "label": "💪 健康z",  "folder": "健康z",  "color": "#2ed573"},
     {"key": "niuma",    "label": "✅ 牛马z",  "folder": "牛马z",  "color": "#ff6b81"},
+    {"key": "pnl",      "label": "💰 盈亏",   "folder": "",        "color": "#ffd700"},
 ]
 
 # ─── Markdown → HTML ──────────────────────────────────────────────────────────
@@ -166,10 +167,25 @@ def write_aboutme(data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def read_pnl():
+    path = os.path.join(ROOT, 'pnl_log.json')
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f).get('entries', [])
+    except:
+        return []
+
+def write_pnl(entries):
+    path = os.path.join(ROOT, 'pnl_log.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump({'entries': sorted(entries, key=lambda x: x['date'])}, f, ensure_ascii=False, indent=2)
+
 def available_dates():
     """Return sorted list of dates that have at least one agent report."""
     dates = set()
     for ag in AGENTS:
+        if not ag['folder']:
+            continue
         folder = os.path.join(ROOT, ag['folder'])
         if os.path.isdir(folder):
             for fn in os.listdir(folder):
@@ -308,6 +324,39 @@ li{margin:4px 0;line-height:1.6}
 .no-report{text-align:center;padding:60px 20px;color:#445}
 .no-report .icon{font-size:3em;margin-bottom:16px}
 .no-report p{font-size:.9em}
+
+/* PnL Calendar */
+.pnl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.pnl-card{background:#1a1a30;border-radius:12px;padding:12px;text-align:center}
+.pnl-card .val{font-size:1.5em;font-weight:700;color:#ffd700}
+.pnl-card .lbl{font-size:.75em;color:#778;margin-top:4px}
+.pnl-cal-wrap{background:#1a1a30;border-radius:12px;padding:16px;margin-bottom:20px}
+.pnl-cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px}
+.pnl-month{font-size:1em;font-weight:600;color:#fff}
+.mnav{background:#1e1e35;border:1px solid #3a3a55;border-radius:8px;color:#aad;padding:5px 12px;font-size:.9em;cursor:pointer}
+.mnav:hover{background:#2a2a45;text-decoration:none}
+.pnl-cal{border-collapse:collapse;width:100%;table-layout:fixed}
+.pnl-cal thead th,.pnl-cal tbody td{padding:4px 2px;text-align:center;border:none}
+.cal-wday{color:#556;font-size:.78em;padding-bottom:6px}
+.cal-day{border-radius:8px;padding:4px !important;cursor:default;min-height:48px;vertical-align:top}
+.cal-empty{background:none !important;border:none !important}
+.cal-num{font-size:.78em;color:#778;text-align:right;padding-right:4px}
+.cal-pnl{font-size:.82em;font-weight:600;margin-top:2px}
+.cal-win{background:#0d2a18;border:1px solid #1a5c32}
+.cal-win .cal-pnl{color:#2ed573}
+.cal-loss{background:#2a0d10;border:1px solid #5c1a1a}
+.cal-loss .cal-pnl{color:#ff4757}
+.cal-zero{background:#1a1a25;border:1px solid #2a2a40}
+.cal-zero .cal-pnl{color:#556}
+.cal-nodata{background:#111120;border:1px solid #1e1e30}
+.cal-today .cal-num{color:#ffd700;font-weight:700}
+.cal-weekend .cal-num{color:#445}
+.pnl-chart-wrap{background:#1a1a30;border-radius:12px;padding:16px;margin-bottom:20px}
+.pnl-form{background:#1a1a30;border-radius:12px;padding:16px;border:1px dashed #3a3a55;margin-bottom:20px}
+.pnl-form h3{color:#ffd700;margin-bottom:12px}
+.pnl-input{background:#0d0d1a;border:1px solid #3a3a55;border-radius:8px;color:#fff;font-size:.9em;padding:9px 12px;outline:none}
+.pnl-input:focus{border-color:#ffd700}
+.pnl-btn{background:#ffd700;color:#1a1200;border:none;border-radius:8px;padding:9px 20px;font-size:.9em;font-weight:700;cursor:pointer}
 """
 
 JS = """
@@ -473,12 +522,153 @@ def render_niuma_panel(date_str):
     return f'<div class="md-content">{md_html}</div>{add_form}'
 
 
+def render_pnl_panel(date_str):
+    import calendar as cal_mod
+    entries = read_pnl()
+    pnl_map = {e['date']: e for e in entries}
+    today = str(datetime.date.today())
+
+    try:
+        display_month = datetime.date.fromisoformat(date_str).replace(day=1)
+    except Exception:
+        display_month = datetime.date.today().replace(day=1)
+
+    prev_month = (display_month - datetime.timedelta(days=1)).replace(day=1)
+    next_month = (display_month.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+
+    prev_link = f'<a class="mnav" href="/{prev_month}#panel-pnl">&#9664;</a>'
+    if next_month > datetime.date.today():
+        next_link = '<span class="mnav" style="opacity:.3;pointer-events:none">&#9654;</span>'
+    else:
+        next_link = f'<a class="mnav" href="/{next_month}#panel-pnl">&#9654;</a>'
+
+    year, month = display_month.year, display_month.month
+    month_entries = [e for e in entries if e['date'].startswith(f'{year:04d}-{month:02d}')]
+    month_total = sum(e['pnl'] for e in month_entries)
+    win_days  = sum(1 for e in month_entries if e['pnl'] > 0)
+    loss_days = sum(1 for e in month_entries if e['pnl'] < 0)
+    trade_days = len(month_entries)
+    win_rate = round(win_days / trade_days * 100) if trade_days else 0
+    total_color = '#2ed573' if month_total >= 0 else '#ff4757'
+    sign = '+' if month_total > 0 else ''
+    stats_html = f'''
+<div class="pnl-stats">
+  <div class="pnl-card"><div class="val" style="color:{total_color}">{sign}{month_total:,.0f}</div><div class="lbl">月度盈亏 SGD</div></div>
+  <div class="pnl-card"><div class="val">{trade_days}</div><div class="lbl">交易天数</div></div>
+  <div class="pnl-card"><div class="val" style="color:#2ed573">{win_rate}%</div><div class="lbl">月度胜率</div></div>
+  <div class="pnl-card"><div class="val" style="color:#2ed573">{win_days}盈 / <span style="color:#ff4757">{loss_days}亏</span></div><div class="lbl">盈亏天数</div></div>
+</div>'''
+
+    weekdays = '<tr>' + ''.join(f'<th class="cal-wday">{d}</th>' for d in ['一','二','三','四','五','六','日']) + '</tr>'
+    cal_rows = ''
+    for week in cal_mod.monthcalendar(year, month):
+        row = '<tr>'
+        for i, day in enumerate(week):
+            is_weekend = i >= 5
+            if day == 0:
+                row += '<td class="cal-day cal-empty"></td>'
+            else:
+                dk = f'{year:04d}-{month:02d}-{day:02d}'
+                entry = pnl_map.get(dk)
+                today_cls = ' cal-today' if dk == today else ''
+                wknd_cls  = ' cal-weekend' if is_weekend else ''
+                if entry:
+                    v = entry['pnl']
+                    if v > 0:   c, vs = 'cal-win',  f'+{v:,.0f}'
+                    elif v < 0: c, vs = 'cal-loss', f'{v:,.0f}'
+                    else:       c, vs = 'cal-zero', '0'
+                    note_attr = f' title="{entry.get("note","")}"' if entry.get('note') else ''
+                    row += (f'<td class="cal-day {c}{today_cls}{wknd_cls}"{note_attr}>'
+                            f'<div class="cal-num">{day}</div>'
+                            f'<div class="cal-pnl">{vs}</div></td>')
+                else:
+                    row += (f'<td class="cal-day cal-nodata{today_cls}{wknd_cls}">'
+                            f'<div class="cal-num">{day}</div></td>')
+        row += '</tr>'
+        cal_rows += row
+
+    calendar_html = f'''
+<div class="pnl-cal-wrap">
+  <div class="pnl-cal-nav">{prev_link}<span class="pnl-month">{display_month.strftime("%Y年%m月")}</span>{next_link}</div>
+  <table class="pnl-cal"><thead>{weekdays}</thead><tbody>{cal_rows}</tbody></table>
+</div>'''
+
+    sorted_entries = sorted(entries, key=lambda e: e['date'])
+    cumulative, cum_dates, cum_vals = 0, [], []
+    for e in sorted_entries:
+        cumulative += e['pnl']
+        cum_dates.append(e['date'][5:])
+        cum_vals.append(round(cumulative, 2))
+    total_pnl = cumulative
+    tc2 = '#2ed573' if total_pnl >= 0 else '#ff4757'
+    ts = '+' if total_pnl > 0 else ''
+
+    chart_html = ''
+    if cum_vals:
+        chart_html = f'''
+<div class="pnl-chart-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="color:#aac;font-size:.9em">累计盈亏走势</span>
+    <span style="font-size:1.1em;font-weight:700;color:{tc2}">{ts}{total_pnl:,.2f} SGD</span>
+  </div>
+  <canvas id="pnlChart" height="120"></canvas>
+</div>
+<script>
+(function(){{
+  const ctx = document.getElementById('pnlChart');
+  if (!ctx) return;
+  new Chart(ctx, {{
+    type: 'line',
+    data: {{
+      labels: {json.dumps(cum_dates)},
+      datasets: [{{
+        label: '累计 SGD', data: {json.dumps(cum_vals)},
+        borderColor: '{tc2}',
+        backgroundColor: '{tc2}22',
+        tension: 0.3, pointRadius: 2, fill: true
+      }}]
+    }},
+    options: {{
+      responsive: true,
+      plugins: {{ legend: {{ display: false }} }},
+      scales: {{
+        x: {{ ticks: {{ color: '#668', maxTicksLimit: 12 }}, grid: {{ color: '#1e1e32' }} }},
+        y: {{ ticks: {{ color: '#668',
+              callback: function(v) {{ return Math.abs(v)>=1000 ? (v/1000).toFixed(1)+'k' : v; }}
+             }}, grid: {{ color: '#1e1e32' }} }}
+      }}
+    }}
+  }});
+}})();
+</script>'''
+
+    today_entry = pnl_map.get(today, {})
+    form_html = f'''
+<div class="pnl-form">
+  <h3>记录盈亏</h3>
+  <form method="post" action="/pnl">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input type="date" name="date" value="{today}" class="pnl-input" style="width:150px">
+      <input type="number" name="pnl" step="0.01" placeholder="盈亏金额（亏损填负数）"
+             value="{today_entry.get('pnl','')}" class="pnl-input" style="width:220px">
+      <input type="text" name="note" placeholder="备注（可选）"
+             value="{today_entry.get('note','')}" class="pnl-input" style="flex:1;min-width:120px">
+      <button type="submit" class="pnl-btn">记录</button>
+    </div>
+  </form>
+</div>'''
+
+    return f'{stats_html}{calendar_html}{chart_html}{form_html}'
+
+
 def render_panel(agent, date_str, aboutme):
     key = agent['key']
     if key == 'jiankang':
         return render_health_panel(date_str, aboutme)
     if key == 'niuma':
         return render_niuma_panel(date_str)
+    if key == 'pnl':
+        return render_pnl_panel(date_str)
 
     md_text = read_md(agent['folder'], date_str)
     if not md_text:
@@ -662,6 +852,22 @@ class Handler(BaseHTTPRequestHandler):
                 with open(fpath, 'a', encoding='utf-8') as f:
                     f.write(f'{name}|{priority}\n')
             self.send_json({'ok': True})
+            return
+
+        if path == '/pnl':
+            date_str = params.get('date', [''])[0].strip()
+            pnl_str  = params.get('pnl',  [''])[0].strip()
+            note     = params.get('note', [''])[0].strip()
+            if date_str and pnl_str:
+                try:
+                    pnl_val = float(pnl_str)
+                    entries = read_pnl()
+                    entries = [e for e in entries if e.get('date') != date_str]
+                    entries.append({'date': date_str, 'pnl': pnl_val, 'currency': 'SGD', 'note': note})
+                    write_pnl(entries)
+                except Exception:
+                    pass
+            self.redirect(f'/{date_str}#panel-pnl')
             return
 
         self.send_html('<h1>404</h1>', 404)
