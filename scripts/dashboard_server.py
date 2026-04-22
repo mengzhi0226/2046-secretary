@@ -188,14 +188,28 @@ def parse_stock_output_to_html(output):
         else:
             price = '—'; chg = ''; pct = ''; chg_cls = ''; chg_arrow = ''
 
-        ma5_m  = re.search(r'MA5：\$([0-9.]+)', block)
-        ma20_m = re.search(r'MA20：\$([0-9.]+)', block)
+        # Pre/post market
+        pre_m  = re.search(r'盘前价格：(.+)', block)
+        post_m = re.search(r'盘后价格：(.+)', block)
+        pre_raw  = pre_m.group(1).strip()  if pre_m  else 'N/A'
+        post_raw = post_m.group(1).strip() if post_m else 'N/A'
+
+        def ext_cls(s):
+            if '(+' in s: return 'up'
+            if '(-' in s: return 'dn'
+            return ''
+
+        pre_cls  = ext_cls(pre_raw)
+        post_cls = ext_cls(post_raw)
+
+        ma5_m   = re.search(r'MA5：\$([0-9.]+)', block)
+        ma20_m  = re.search(r'MA20：\$([0-9.]+)', block)
         trend_m = re.search(r'→ (.+)', block)
-        rsi_m  = re.search(r'RSI\(14\)：([0-9.]+)\s+([^\n]*)', block)
-        vol_m  = re.search(r'成交量：([0-9,]+)（均量的 ([0-9.]+)x）', block)
-        exp_m  = re.search(r'期权（最近到期 ([^）]+)）', block)
-        call_m = re.search(r'ATM Call：(.+)', block)
-        put_m  = re.search(r'ATM Put\s*：(.+)', block)
+        rsi_m   = re.search(r'RSI\(14\)：([0-9.]+)\s+([^\n]*)', block)
+        vol_m   = re.search(r'成交量：([0-9,]+)（均量的 ([0-9.]+)x）', block)
+        exp_m   = re.search(r'期权（最近到期 ([^）]+)）', block)
+        call_m  = re.search(r'ATM Call：(.+)', block)
+        put_m   = re.search(r'ATM Put\s*：(.+)', block)
 
         ma5    = ma5_m.group(1)  if ma5_m  else '—'
         ma20   = ma20_m.group(1) if ma20_m else '—'
@@ -215,7 +229,7 @@ def parse_stock_output_to_html(output):
         call_str  = call_m.group(1).strip() if call_m else '—'
         put_str   = put_m.group(1).strip()  if put_m  else '—'
 
-        card = f'''<div class="stock-card-big">
+        card = f'''<div class="stock-card-big" id="card-{sym}">
   <div class="sc-header">
     <span class="sc-sym">{sym}</span>
     <span class="sc-exp">{exp_str}</span>
@@ -224,6 +238,13 @@ def parse_stock_output_to_html(output):
     <span class="sc-price">${price}</span>
     <span class="sc-chg {chg_cls}">{chg_arrow} {chg} ({pct})</span>
   </div>
+  <div class="sc-ext-row">
+    <span class="sc-lbl">盘前</span><span class="sc-ext {pre_cls}">{pre_raw}</span>
+  </div>
+  <div class="sc-ext-row">
+    <span class="sc-lbl">盘后</span><span class="sc-ext {post_cls}">{post_raw}</span>
+  </div>
+  <div class="sc-divider"></div>
   <div class="sc-row">
     <span class="sc-lbl">MA5</span><span class="sc-val">${ma5}</span>
     <span class="sc-lbl">MA20</span><span class="sc-val">${ma20}</span>
@@ -240,9 +261,11 @@ def parse_stock_output_to_html(output):
     <span class="sc-note">{vol_ratio}x 均量</span>
   </div>
   <div class="sc-opts">
-    <div class="sc-opt call"><span class="opt-lbl">📈 Call</span><span>{call_str}</span></div>
-    <div class="sc-opt put"><span class="opt-lbl">📉 Put</span><span>{put_str}</span></div>
+    <div class="sc-opt call"><span class="opt-lbl">📈 ATM Call</span><span>{call_str}</span></div>
+    <div class="sc-opt put"><span class="opt-lbl">📉 ATM Put</span><span>{put_str}</span></div>
   </div>
+  <button class="ai-btn" onclick="aiAnalyze('{sym}', this)">🎯 AI深度分析</button>
+  <div class="ai-result" id="ai-{sym}"></div>
 </div>'''
         cards.append(card)
 
@@ -533,11 +556,28 @@ li{margin:4px 0;line-height:1.6}
 .sc-val{color:#ccd;font-weight:600}
 .sc-trend{font-size:.8em;margin-left:auto}
 .sc-note{color:#778;font-size:.8em}
+.sc-ext-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:.82em}
+.sc-ext{font-weight:600;color:#aab}
+.sc-ext.up{color:#2ed573}.sc-ext.dn{color:#ff4757}
+.sc-divider{border-top:1px solid #2a2a40;margin:10px 0}
 .sc-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;border-top:1px solid #2a2a40;padding-top:12px}
 .sc-opt{background:#0d0d1a;border-radius:8px;padding:8px 10px;font-size:.8em;color:#aab}
 .sc-opt.call{border-left:3px solid #2ed573}
 .sc-opt.put{border-left:3px solid #ff4757}
 .opt-lbl{display:block;color:#778;font-size:.75em;margin-bottom:4px}
+.ai-btn{width:100%;margin-top:12px;background:linear-gradient(135deg,#2a1a50,#1a2a50);
+  border:1px solid #4a3a80;border-radius:8px;color:#aac;font-size:.85em;
+  padding:8px;cursor:pointer;transition:all .2s}
+.ai-btn:hover{background:linear-gradient(135deg,#3a2a70,#2a3a70);color:#fff}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-result{margin-top:12px;font-size:.85em;line-height:1.6;color:#ccd}
+.ai-result h3{font-size:.9em;color:#ffa502;margin:10px 0 4px}
+.ai-result h4{font-size:.85em;color:#aad;margin:8px 0 3px}
+.ai-result strong{color:#fff}
+.ai-result table{width:100%;font-size:.8em;margin:6px 0}
+.ai-result th{background:#1a1a2a;color:#889;font-weight:normal}
+.ai-result td,.ai-result th{padding:5px 8px;border:1px solid #2a2a40}
+.ai-loading{color:#ffa502;text-align:center;padding:12px;font-size:.85em}
 
 /* PnL Calendar */
 .pnl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
@@ -613,6 +653,30 @@ function queryStock() {
 const tickerInp = document.getElementById('tickerInput');
 if (tickerInp) {
   tickerInp.addEventListener('keydown', e => { if(e.key==='Enter') queryStock(); });
+}
+
+// AI deep analysis
+function aiAnalyze(sym, btn) {
+  const res = document.getElementById('ai-' + sym);
+  btn.disabled = true;
+  btn.textContent = '⏳ AI分析中（约30秒）…';
+  res.innerHTML = '<div class="ai-loading">🔍 正在搜索盘前新闻 + 期权异动 + 生成建议…</div>';
+  fetch('/stock-ai-analyze', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'ticker=' + encodeURIComponent(sym)
+  })
+  .then(r => r.json())
+  .then(d => {
+    btn.disabled = false;
+    btn.textContent = '🔄 重新分析';
+    res.innerHTML = d.ok ? d.html : '<p style="color:#ff4757">' + d.error + '</p>';
+  })
+  .catch(() => {
+    btn.disabled = false;
+    btn.textContent = '🎯 AI深度分析';
+    res.innerHTML = '<p style="color:#ff4757">请求失败</p>';
+  });
 }
 
 // Toast
@@ -750,6 +814,83 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json({'ok': False, 'html': f'<p class="empty">错误：{e}</p>'})
             else:
                 self.send_json({'ok': False, 'html': '<p class="empty">请输入股票代码</p>'})
+            return
+
+        if path == '/stock-ai-analyze':
+            ticker = params.get('ticker', [''])[0].upper().strip()
+            if not ticker:
+                self.send_json({'ok': False, 'error': '未提供股票代码', 'html': ''})
+                return
+            # Step 1: get real-time data
+            data_cmd = [sys.executable, os.path.join(ROOT, 'scripts', 'get_stock_data.py'), ticker]
+            try:
+                data_result = subprocess.run(
+                    data_cmd, capture_output=True, text=True, encoding='utf-8',
+                    cwd=ROOT, timeout=45
+                )
+                stock_data = data_result.stdout.strip()
+            except Exception as e:
+                self.send_json({'ok': False, 'error': f'行情数据获取失败: {e}', 'html': ''})
+                return
+
+            today = (datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime('%Y-%m-%d')
+            prompt = f"""你是孟之的盘前投资顾问。交易风格：开盘30分钟内完成，目标每日$500，主要策略 Buy Call + Sell Put。
+
+以下是 {ticker} 的实时数据（用作事实基准，不要质疑这些数字）：
+{stock_data}
+
+请立即执行以下分析（中文，简洁专业，全程用 Markdown）：
+
+### 🚀 盘前/盘后异动
+WebSearch "{ticker} premarket news today {today}"
+- 价格变动核心原因（1-2句）
+
+### 🌐 大盘背景
+WebSearch "US stock market futures premarket {today}"
+- 大盘环境一句话判断（风险偏好 on/off）
+
+### 🐋 大单期权异动
+WebSearch "{ticker} unusual options activity {today}"
+- 有无异常大单，方向偏多还是空（1句）
+
+### 🎯 今日操作建议
+基于上述分析和实时数据，给出具体建议：
+
+**Buy Call**
+| 项目 | 详情 |
+|------|------|
+| 合约 | ${ticker} $XXX Call MM-DD |
+| 入场区间 | $X.XX – $X.XX |
+| 止盈/止损 | +50% / -30% |
+| 入场时机 | 开盘后X分钟 |
+
+**Sell Put**
+| 项目 | 详情 |
+|------|------|
+| 合约 | ${ticker} $XXX Put MM-DD |
+| 权利金 | $X.XX |
+| 支撑位/止损 | 跌破$XXX则平仓 |
+
+### ⚠️ 关键风险
+- （1-2条，简洁）
+
+只输出分析结果，不要任何前言或总结。"""
+
+            try:
+                ai_cmd = ['claude', '--dangerously-skip-permissions', '-p', prompt]
+                ai_result = subprocess.run(
+                    ai_cmd, capture_output=True, text=True, encoding='utf-8',
+                    cwd=ROOT, timeout=120
+                )
+                md_text = ai_result.stdout.strip()
+                if not md_text:
+                    md_text = ai_result.stderr.strip() or '分析未返回结果'
+                html_out = f'<div class="ai-result">{md_to_html(md_text)}</div>'
+                self.send_json({'ok': True, 'html': html_out})
+            except subprocess.TimeoutExpired:
+                self.send_json({'ok': False, 'error': 'AI分析超时（>120秒），请重试', 'html': ''})
+            except Exception as e:
+                self.send_json({'ok': False, 'error': f'AI调用失败: {e}', 'html': ''})
             return
 
         if path == '/pnl':

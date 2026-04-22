@@ -31,6 +31,23 @@ def analyze(symbol):
     change = round(price - prev, 2)
     pct    = round((change / prev * 100) if prev else 0, 2)
 
+    # 盘前/盘后价格
+    pre_price  = info.get("preMarketPrice",  None)
+    post_price = info.get("postMarketPrice", None)
+    pre_str = post_str = "N/A"
+    if pre_price and price:
+        pre_price = round(float(pre_price), 2)
+        pre_chg = round(pre_price - price, 2)
+        pre_pct = round(pre_chg / price * 100, 2) if price else 0
+        sign = "+" if pre_chg >= 0 else ""
+        pre_str = f"${pre_price}  ({sign}{pre_chg} / {sign}{pre_pct}%)"
+    if post_price and price:
+        post_price = round(float(post_price), 2)
+        post_chg = round(post_price - price, 2)
+        post_pct = round(post_chg / price * 100, 2) if price else 0
+        sign = "+" if post_chg >= 0 else ""
+        post_str = f"${post_price}  ({sign}{post_chg} / {sign}{post_pct}%)"
+
     # 历史数据（30天）用于均线和RSI
     hist = ticker.history(period="30d")
     closes = list(hist["Close"])
@@ -55,12 +72,10 @@ def analyze(symbol):
         expirations = ticker.options
         next_exp = expirations[0] if expirations else "N/A"
         chain = ticker.option_chain(next_exp) if next_exp != "N/A" else None
-        # 找ATM期权
         atm_call = atm_put = "N/A"
         if chain is not None:
             calls = chain.calls
             puts  = chain.puts
-            # 最接近当前价格的行权价
             atm_strike = min(calls["strike"], key=lambda x: abs(x - price))
             call_row = calls[calls["strike"] == atm_strike]
             put_row  = puts[puts["strike"] == atm_strike]
@@ -77,6 +92,8 @@ def analyze(symbol):
 === {symbol} ===
 当前价格：${price}  ({'+' if change>=0 else ''}{change} / {'+' if pct>=0 else ''}{pct}%)
 昨收：${prev}
+盘前价格：{pre_str}
+盘后价格：{post_str}
 
 技术指标：
   MA5：${ma5}  MA20：${ma20}  → {trend}
