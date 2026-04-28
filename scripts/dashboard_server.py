@@ -165,7 +165,7 @@ def get_local_ip():
 
 def parse_stock_output_to_html(output):
     if not output:
-        return '<p class="empty">无数据</p>'
+        return '<p class="empty">无数据</p>', []
 
     blocks = re.split(r'(?=^=== )', output, flags=re.MULTILINE)
     cards = []
@@ -264,14 +264,14 @@ def parse_stock_output_to_html(output):
     <div class="sc-opt call"><span class="opt-lbl">📈 ATM Call</span><span>{call_str}</span></div>
     <div class="sc-opt put"><span class="opt-lbl">📉 ATM Put</span><span>{put_str}</span></div>
   </div>
-  <button class="ai-btn" onclick="aiAnalyze('{sym}', this)">🎯 AI深度分析</button>
-  <div class="ai-result" id="ai-{sym}"></div>
 </div>'''
-        cards.append(card)
+        cards.append((sym, card))
 
     if not cards:
-        return '<p class="empty">无法解析数据</p>'
-    return '<div class="stock-grid-big">' + ''.join(cards) + '</div>'
+        return '<p class="empty">无法解析数据</p>', []
+    tickers = [sym for sym, _ in cards]
+    cards_html = '<div class="stock-grid-big">' + ''.join(c for _, c in cards) + '</div>'
+    return cards_html, tickers
 
 # ─── Panel renderers ──────────────────────────────────────────────────────────
 
@@ -293,7 +293,6 @@ def render_live_panel():
     <button class="preset-btn" onclick="setTicker(\'AAPL\')">AAPL</button>
     <button class="preset-btn" onclick="setTicker(\'META\')">META</button>
     <button class="preset-btn" onclick="setTicker(\'MSFT\')">MSFT</button>
-    <button class="preset-btn" onclick="setTicker(\'MU,NVDA,TSLA\')">全家桶</button>
   </div>
 </div>
 <div id="stockResults" class="stock-results">
@@ -422,22 +421,31 @@ def render_pnl_panel(date_str):
 </script>'''
 
     today_entry = pnl_map.get(today, {})
+    today_recorded = today in pnl_map
+    today_hint = ''
+    if today_recorded:
+        v = today_entry.get('pnl', 0)
+        sign = '+' if v >= 0 else ''
+        today_hint = f'<div class="pnl-today-hint">今日已记录：{sign}{v:,.2f} SGD ✓</div>'
+
     form_html = f'''
-<div class="pnl-form">
-  <h3>记录盈亏</h3>
-  <form method="post" action="/pnl">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <input type="date" name="date" value="{today}" class="pnl-input" style="width:150px">
-      <input type="number" name="pnl" step="0.01" placeholder="盈亏金额（亏损填负数）"
-             value="{today_entry.get('pnl','')}" class="pnl-input" style="width:220px">
-      <input type="text" name="note" placeholder="备注（可选）"
-             value="{today_entry.get('note','')}" class="pnl-input" style="flex:1;min-width:120px">
-      <button type="submit" class="pnl-btn">记录</button>
-    </div>
-  </form>
+<div class="pnl-entry">
+  <div class="pnl-entry-title">💰 今日盈亏录入</div>
+  <div class="pnl-entry-row">
+    <input type="number" id="pnlAmount" step="0.01"
+           placeholder="输入金额（亏损填负数）"
+           value="{today_entry.get('pnl','')}"
+           class="pnl-big-input">
+    <input type="text" id="pnlNote"
+           placeholder="备注（可选）"
+           value="{today_entry.get('note','')}"
+           class="pnl-note-input">
+    <button onclick="submitPnl()" class="pnl-big-btn">记录</button>
+  </div>
+  {today_hint}
 </div>'''
 
-    return f'{stats_html}{calendar_html}{chart_html}{form_html}'
+    return f'{form_html}{stats_html}{calendar_html}{chart_html}'
 
 
 def render_panel(agent, date_str):
@@ -508,7 +516,7 @@ li{margin:4px 0;line-height:1.6}
 .tab.active{color:#fff;border-bottom-color:var(--tc)}
 
 /* Content */
-.content{padding:20px;max-width:960px;margin:0 auto}
+.content{padding:20px;max-width:1100px;margin:0 auto}
 .panel{display:none}.panel.active{display:block}
 
 /* No-report */
@@ -542,43 +550,62 @@ li{margin:4px 0;line-height:1.6}
 .loading-msg{color:#ffa502;padding:20px 0;text-align:center;font-size:.9em}
 
 /* Big stock cards */
-.stock-grid-big{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.stock-card-big{background:#1a1a30;border-radius:14px;padding:16px;border:1px solid #2a2a40}
-.sc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.sc-sym{font-size:1.2em;font-weight:800;color:#ffa502;letter-spacing:1px}
-.sc-exp{font-size:.75em;color:#556;background:#0d0d1a;padding:3px 8px;border-radius:6px}
-.sc-price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
-.sc-price{font-size:1.8em;font-weight:700;color:#fff}
-.sc-chg{font-size:.9em;font-weight:600}
+.stock-grid-big{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:20px}
+.stock-card-big{background:#1a1a30;border-radius:14px;padding:20px;border:1px solid #2a2a40}
+.sc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sc-sym{font-size:1.6em;font-weight:800;color:#ffa502;letter-spacing:1px}
+.sc-exp{font-size:.8em;color:#556;background:#0d0d1a;padding:3px 8px;border-radius:6px}
+.sc-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.sc-price{font-size:2.8em;font-weight:700;color:#fff}
+.sc-chg{font-size:1.1em;font-weight:600}
 .sc-chg.up{color:#2ed573}.sc-chg.dn{color:#ff4757}
-.sc-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.85em}
-.sc-lbl{color:#556;min-width:56px}
+.sc-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:.95em}
+.sc-lbl{color:#556;min-width:72px}
 .sc-val{color:#ccd;font-weight:600}
-.sc-trend{font-size:.8em;margin-left:auto}
-.sc-note{color:#778;font-size:.8em}
-.sc-ext-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:.82em}
+.sc-trend{font-size:.85em;margin-left:auto}
+.sc-note{color:#778;font-size:.85em}
+.sc-ext-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.92em}
 .sc-ext{font-weight:600;color:#aab}
 .sc-ext.up{color:#2ed573}.sc-ext.dn{color:#ff4757}
-.sc-divider{border-top:1px solid #2a2a40;margin:10px 0}
+.sc-divider{border-top:1px solid #2a2a40;margin:12px 0}
 .sc-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;border-top:1px solid #2a2a40;padding-top:12px}
-.sc-opt{background:#0d0d1a;border-radius:8px;padding:8px 10px;font-size:.8em;color:#aab}
+.sc-opt{background:#0d0d1a;border-radius:8px;padding:10px 12px;font-size:.88em;color:#aab}
 .sc-opt.call{border-left:3px solid #2ed573}
 .sc-opt.put{border-left:3px solid #ff4757}
-.opt-lbl{display:block;color:#778;font-size:.75em;margin-bottom:4px}
-.ai-btn{width:100%;margin-top:12px;background:linear-gradient(135deg,#2a1a50,#1a2a50);
-  border:1px solid #4a3a80;border-radius:8px;color:#aac;font-size:.85em;
-  padding:8px;cursor:pointer;transition:all .2s}
-.ai-btn:hover{background:linear-gradient(135deg,#3a2a70,#2a3a70);color:#fff}
-.ai-btn:disabled{opacity:.5;cursor:not-allowed}
-.ai-result{margin-top:12px;font-size:.85em;line-height:1.6;color:#ccd}
-.ai-result h3{font-size:.9em;color:#ffa502;margin:10px 0 4px}
-.ai-result h4{font-size:.85em;color:#aad;margin:8px 0 3px}
+.opt-lbl{display:block;color:#778;font-size:.8em;margin-bottom:4px}
+/* AI section — full-width below cards */
+.ai-section{background:#1a1a30;border-radius:14px;padding:20px;margin-top:20px;border:1px solid #2a2a40}
+.ai-sec-title{font-size:1em;font-weight:700;color:#ffa502;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #2a2a40}
+.ai-result{font-size:.92em;line-height:1.7;color:#ccd}
+.ai-result h3{font-size:.95em;color:#ffa502;margin:12px 0 5px}
+.ai-result h4{font-size:.9em;color:#aad;margin:10px 0 4px}
 .ai-result strong{color:#fff}
-.ai-result table{width:100%;font-size:.8em;margin:6px 0}
+.ai-result table{width:100%;font-size:.85em;margin:8px 0}
 .ai-result th{background:#1a1a2a;color:#889;font-weight:normal}
-.ai-result td,.ai-result th{padding:5px 8px;border:1px solid #2a2a40}
-.ai-loading{color:#ffa502;text-align:center;padding:12px;font-size:.85em}
+.ai-result td,.ai-result th{padding:6px 10px;border:1px solid #2a2a40}
+.ai-loading{color:#ffa502;text-align:center;padding:20px;font-size:.9em}
 
+/* PnL entry */
+.pnl-entry{background:#1a1a30;border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #ffd70033}
+.pnl-entry-title{font-size:1.1em;font-weight:700;color:#ffd700;margin-bottom:14px}
+.pnl-entry-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pnl-big-input{background:#0d0d1a;border:1px solid #3a3a55;border-radius:10px;color:#fff;
+  font-size:1.1em;padding:12px 14px;outline:none;flex:1;min-width:180px}
+.pnl-big-input:focus{border-color:#ffd700}
+.pnl-note-input{background:#0d0d1a;border:1px solid #3a3a55;border-radius:10px;color:#fff;
+  font-size:1em;padding:12px 14px;outline:none;flex:1.5;min-width:140px}
+.pnl-note-input:focus{border-color:#ffd700}
+.pnl-big-btn{background:#ffd700;color:#1a1200;border:none;border-radius:10px;
+  padding:12px 28px;font-size:1em;font-weight:700;cursor:pointer;white-space:nowrap}
+.pnl-big-btn:hover{background:#ffe533}
+.pnl-today-hint{margin-top:10px;font-size:.88em;color:#2ed573;padding:6px 0}
+/* Motivation banner */
+.motiv-banner{position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:linear-gradient(135deg,#1a3a1a,#0d2a0d);
+  border-bottom:2px solid #2ed573;padding:18px 24px;
+  font-size:1em;font-weight:600;color:#2ed573;text-align:center;
+  transform:translateY(-100%);transition:transform .4s ease}
+.motiv-banner.show{transform:translateY(0)}
 /* PnL Calendar */
 .pnl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
 .pnl-card{background:#1a1a30;border-radius:12px;padding:12px;text-align:center}
@@ -647,6 +674,9 @@ function queryStock() {
   .then(r => r.json())
   .then(d => {
     res.innerHTML = d.ok ? d.html : '<p class="empty">查询失败，请检查股票代码</p>';
+    if (d.ok && d.tickers) {
+      d.tickers.forEach(sym => aiAnalyze(sym));
+    }
   })
   .catch(() => { res.innerHTML = '<p class="empty">网络错误</p>'; });
 }
@@ -654,12 +684,15 @@ const tickerInp = document.getElementById('tickerInput');
 if (tickerInp) {
   tickerInp.addEventListener('keydown', e => { if(e.key==='Enter') queryStock(); });
 }
+const pnlInp = document.getElementById('pnlAmount');
+if (pnlInp) {
+  pnlInp.addEventListener('keydown', e => { if(e.key==='Enter') submitPnl(); });
+}
 
-// AI deep analysis
-function aiAnalyze(sym, btn) {
+// AI deep analysis — auto-triggered, no button
+function aiAnalyze(sym) {
   const res = document.getElementById('ai-' + sym);
-  btn.disabled = true;
-  btn.textContent = '⏳ AI分析中（约30秒）…';
+  if (!res) return;
   res.innerHTML = '<div class="ai-loading">🔍 正在搜索盘前新闻 + 期权异动 + 生成建议…</div>';
   fetch('/stock-ai-analyze', {
     method: 'POST',
@@ -668,13 +701,9 @@ function aiAnalyze(sym, btn) {
   })
   .then(r => r.json())
   .then(d => {
-    btn.disabled = false;
-    btn.textContent = '🔄 重新分析';
-    res.innerHTML = d.ok ? d.html : '<p style="color:#ff4757">' + d.error + '</p>';
+    res.innerHTML = d.ok ? d.html : '<p style="color:#ff4757">' + (d.error||'分析失败') + '</p>';
   })
   .catch(() => {
-    btn.disabled = false;
-    btn.textContent = '🎯 AI深度分析';
     res.innerHTML = '<p style="color:#ff4757">请求失败</p>';
   });
 }
@@ -684,6 +713,42 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Motivation banner
+function showMotivation(amt) {
+  let msg;
+  if (amt < 200)       msg = '小步快跑，积少成多！今天的收益是明天的基础 💪';
+  else if (amt < 500)  msg = '超过目标了！专注执行，交易风格正在成型 🎯';
+  else if (amt < 1000) msg = '今天表现出色！超额完成目标，保持这种节奏 🚀';
+  else                 msg = '今天是英雄日！大单精准，孟之你就是市场最聪明的人 👑';
+  const b = document.getElementById('motivBanner');
+  b.textContent = msg; b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 3000);
+}
+
+// P&L AJAX submit
+function submitPnl() {
+  const amtEl = document.getElementById('pnlAmount');
+  const noteEl = document.getElementById('pnlNote');
+  if (!amtEl || !amtEl.value) return;
+  const amt = parseFloat(amtEl.value);
+  const note = noteEl ? noteEl.value : '';
+  const today = new Date().toISOString().slice(0,10);
+  fetch('/pnl', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'date=' + today + '&pnl=' + amt + '&note=' + encodeURIComponent(note) + '&ajax=1'
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      if (amt > 0) showMotivation(amt);
+      else showToast('已记录 ' + amt + ' SGD');
+      setTimeout(() => location.reload(), 2500);
+    }
+  })
+  .catch(() => showToast('提交失败，请重试'));
 }
 """
 
@@ -743,6 +808,7 @@ def build_page(date_str):
 <div class="content">{panels_html}</div>
 
 <div class="toast" id="toast"></div>
+<div class="motiv-banner" id="motivBanner"></div>
 <script>{JS}</script>
 </body>
 </html>'''
@@ -806,8 +872,14 @@ class Handler(BaseHTTPRequestHandler):
                         cmd, capture_output=True, text=True, encoding='utf-8',
                         cwd=ROOT, timeout=45
                     )
-                    cards_html = parse_stock_output_to_html(result.stdout)
-                    self.send_json({'ok': True, 'html': cards_html})
+                    cards_html, tickers = parse_stock_output_to_html(result.stdout)
+                    ai_sections = ''.join(
+                        f'<div class="ai-section" id="ai-sec-{t}">'
+                        f'<div class="ai-sec-title">🔍 {t} 深度分析</div>'
+                        f'<div class="ai-loading" id="ai-{t}">正在分析…</div>'
+                        f'</div>' for t in tickers
+                    )
+                    self.send_json({'ok': True, 'html': cards_html + ai_sections, 'tickers': tickers})
                 except subprocess.TimeoutExpired:
                     self.send_json({'ok': False, 'html': '<p class="empty">查询超时，请稍后重试</p>'})
                 except Exception as e:
@@ -897,7 +969,11 @@ WebSearch "{ticker} unusual options activity {today}"
             date_str = params.get('date', [''])[0].strip()
             pnl_str  = params.get('pnl',  [''])[0].strip()
             note     = params.get('note', [''])[0].strip()
-            if date_str and pnl_str:
+            is_ajax  = params.get('ajax', [''])[0] == '1'
+            if not date_str:
+                date_str = str(datetime.date.today())
+            pnl_val = None
+            if pnl_str:
                 try:
                     pnl_val = float(pnl_str)
                     entries = read_pnl()
@@ -906,6 +982,9 @@ WebSearch "{ticker} unusual options activity {today}"
                     write_pnl(entries)
                 except Exception:
                     pass
+            if is_ajax:
+                self.send_json({'ok': True, 'pnl': pnl_val})
+                return
             self.redirect(f'/{date_str}#panel-pnl')
             return
 
